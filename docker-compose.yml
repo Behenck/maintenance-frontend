@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+    app:
+      container_name: react_vite_app
+      build:
+        context: .
+        dockerfile: Dockerfile
+      volumes:
+        - ./:/usr/src/app
+      ports:
+        - '3000:3000'
+networks:
+ default:
+  driver: bridge
