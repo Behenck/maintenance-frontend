@@ -1,3 +1,4 @@
+import { useMaintenance } from '../../hooks/useMaintenance'
 import { PaginationItem } from './PaginationItem'
 
 interface PaginationProps {
@@ -19,11 +20,12 @@ function generatePagesArray(from: number, to: number) {
 
 export function Pagination({
   totalCountOfRegisters,
-  registerPerPage = 4,
+  registerPerPage = 10,
   currentPage = 1,
   onPageChange,
 }: PaginationProps) {
   const lastPage = Math.floor(totalCountOfRegisters / registerPerPage)
+  const { totalMaintenances } = useMaintenance()
 
   const previousPages =
     currentPage > 1
@@ -41,7 +43,9 @@ export function Pagination({
   return (
     <div className="flex justify-between items-center space-y-6">
       <div>
-        <strong>0</strong> - <strong>4</strong> de <strong>100</strong>
+        <strong>0</strong> -{' '}
+        <strong>{totalMaintenances <= 10 ? totalMaintenances : 10}</strong> de{' '}
+        <strong>{totalMaintenances}</strong>
       </div>
       <div className="flex space-x-2">
         {currentPage > 1 + siblingsCount && (

@@ -167,6 +167,7 @@ export function NewMaintenanceModal() {
               <span></span>
             ) : (
               <Button
+                type="button"
                 onClick={returnStep}
                 className="bg-gray-300 hover:bg-gray-350"
               >

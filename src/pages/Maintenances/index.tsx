@@ -10,7 +10,8 @@ import { ListMaintenances } from './components/ListMaintenances'
 import { useMaintenance } from '../../hooks/useMaintenance'
 
 export function Maintenances() {
-  const { isLoading, maintenances, daysBeforeMaintenance } = useMaintenance()
+  const { isLoading, maintenances, daysBeforeMaintenance, totalMaintenances } =
+    useMaintenance()
   const [page, setPage] = useState(1)
 
   return (
@@ -50,7 +51,7 @@ export function Maintenances() {
       </main>
 
       <Pagination
-        totalCountOfRegisters={100}
+        totalCountOfRegisters={totalMaintenances}
         currentPage={page}
         onPageChange={setPage}
       />

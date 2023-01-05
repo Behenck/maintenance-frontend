@@ -63,6 +63,7 @@ export function MaintenancesProvider({ children }: MaintenancesProviderProps) {
   const [lastMaintenance, setLastMaintenance] = useState<IGetLastMaintenance>(
     {} as IGetLastMaintenance,
   )
+  const [totalMaintenances, setTotalMaintenances] = useState(0)
 
   dayjs.extend(relativeTime)
   dayjs.locale('pt-br')
@@ -76,8 +77,10 @@ export function MaintenancesProvider({ children }: MaintenancesProviderProps) {
   const fetchMaintenances = useCallback(async () => {
     try {
       setIsLoading(true)
-      const response = await api.get<Maintenance[]>('/maintenances')
+      const response = await api.get<Maintenance[]>('/maintenances/10')
       setMaintenances(response.data)
+      const responseTotal = await api.get<Maintenance[]>('/maintenances')
+      setTotalMaintenances(responseTotal.data.length)
     } catch (err) {
       console.log(err)
     } finally {
@@ -97,7 +100,6 @@ export function MaintenancesProvider({ children }: MaintenancesProviderProps) {
   }, [fetchMaintenances])
 
   const totalMachines = machines.length
-  const totalMaintenances = maintenances.length
   const daysBeforeMaintenance = dayjs(lastMaintenance.maintenanceDate).toNow()
 
   return (
