@@ -8,6 +8,7 @@ interface StepUserProps {
   setDepartmentInput: (departmentName: string) => void
   departmentInput: string
   userInput: string
+  onDepartmentIsValid: (valid: boolean) => void
 }
 
 interface User {
@@ -29,6 +30,7 @@ export function StepUser({
   setUserInput,
   setDepartmentInput,
   userInput,
+  onDepartmentIsValid,
 }: StepUserProps) {
   const [users, setUsers] = useState<User[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
@@ -38,11 +40,14 @@ export function StepUser({
     setDepartmentInput(user.data[0] ? user.data[0].department.name : '')
     findUsers(userName)
     setUserInput(userName)
+    isValidDepartment(user.data[0].department.name)
+    onDepartmentIsValid(!!user.data[0])
   }
 
   function onChangeDepartments(departmentName: string) {
     findDepartments(departmentName)
     setDepartmentInput(departmentName)
+    isValidDepartment(departmentName)
   }
 
   async function findUsers(searchUserName: string) {
@@ -53,6 +58,20 @@ export function StepUser({
   async function findDepartments(searchDepartmentName: string) {
     const response = await api.get(`/departments/${searchDepartmentName}`)
     setDepartments(response.data)
+    isValidDepartment(searchDepartmentName)
+  }
+
+  function isValidDepartment(name?: string) {
+    const depName = name
+    console.log(name)
+    const existsDepartment = departments.find(
+      (department) => department.name === depName,
+    )
+    if (existsDepartment) {
+      onDepartmentIsValid(true)
+    } else {
+      onDepartmentIsValid(false)
+    }
   }
 
   return (

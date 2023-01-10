@@ -2,17 +2,19 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as Dialog from '@radix-ui/react-dialog'
 import { X } from 'phosphor-react'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { SubmitHandler, useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
 import { z } from 'zod'
 import { Button } from '../../../../components/Button'
 import { ToastAxiosError } from '../../../../errors/ToastAxiosError'
-import { useMaintenance } from '../../../../hooks/useMaintenance'
+import { useMaintenance } from '../../../../services/hooks/useMaintenance'
 import { api } from '../../../../lib/api'
 import { Steps } from './Steps'
 import { StepInfo } from './Steps/StepInfo'
 import { StepMachine } from './Steps/StepMachine'
 import { StepUser } from './Steps/StepUser'
+import { useMutation } from 'react-query'
+import { queryClient } from '../../../../services/queryClient'
 
 const NewMaintenanceFormSchema = z.object({
   userName: z.string().min(3),
@@ -32,10 +34,15 @@ type NewMaintenanceFormInputs = z.infer<typeof NewMaintenanceFormSchema>
 
 export function NewMaintenanceModal() {
   const [positionStep, setPositionStep] = useState(1)
+  const [isDepartmentValid, setIsDepartmentValid] = useState(false)
   const [userInput, setUserInput] = useState('')
   const [departmentInput, setDepartmentInput] = useState('')
   const [ipInput, setIpInput] = useState('')
   const { fetchMaintenances } = useMaintenance()
+
+  function onDepartmentIsValid(valid: boolean) {
+    setIsDepartmentValid(valid)
+  }
 
   function nextStep() {
     if (positionStep < 3) {
@@ -70,48 +77,38 @@ export function NewMaintenanceModal() {
     fetchMaintenances()
   }
 
-  async function handleCreateMaintenance(data: NewMaintenanceFormInputs) {
-    const {
-      departmentName,
-      ip,
-      userName,
-      maintenanceDate,
-      description,
-      font,
-      memory,
-      motherboard,
-      processor,
-      storage,
-      system,
-    } = data
+  const createMaintenance = useMutation(
+    async (data: NewMaintenanceFormInputs) => {
+      try {
+        await api.post('/maintenances', {
+          ...data,
+        })
 
-    try {
-      await api.post('/maintenances', {
-        departmentName,
-        ip,
-        userName,
-        maintenanceDate,
-        description,
-        font,
-        memory,
-        motherboard,
-        processor,
-        storage,
-        system,
-      })
+        toast.success('Manutenção criada com sucesso!')
+        resetAll()
+      } catch (error) {
+        console.log(error)
+        ToastAxiosError(error)
+      }
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries('maintenances')
+      },
+    },
+  )
 
-      toast.success('Manutenção criada com sucesso!')
-      resetAll()
-    } catch (error) {
-      console.log(error)
-      ToastAxiosError(error)
-    }
+  const handleCreateMaintenance: SubmitHandler<
+    NewMaintenanceFormInputs
+  > = async (values) => {
+    await createMaintenance.mutateAsync(values)
   }
 
   const isEnabledButtonToUserAndDepartmentAndIpNotEmpty =
     (userInput.length >= 3 &&
       departmentInput.length >= 2 &&
-      positionStep === 1) ||
+      positionStep === 1 &&
+      isDepartmentValid) ||
     (ipInput.length >= 11 && positionStep === 2)
 
   return (
@@ -146,11 +143,11 @@ export function NewMaintenanceModal() {
 
           {positionStep === 1 && (
             <StepUser
-              userInput={userInput}
               departmentInput={departmentInput}
               setUserInput={setUserInput}
               setDepartmentInput={setDepartmentInput}
               register={register}
+              onDepartmentIsValid={onDepartmentIsValid}
             />
           )}
           {positionStep === 2 && (

@@ -10,10 +10,6 @@ import { Select } from '../../../components/Select'
 import { ToastAxiosError } from '../../../errors/ToastAxiosError'
 import { api } from '../../../lib/api'
 
-interface NewMachineModalProps {
-  fetchMachines: () => void
-}
-
 const NewMachineFormSchema = z.object({
   ip: z.string().min(11).max(15),
   motherboard: z.string(),
@@ -26,7 +22,7 @@ const NewMachineFormSchema = z.object({
 
 type NewMachineFormInputs = z.infer<typeof NewMachineFormSchema>
 
-export function NewMachineModal({ fetchMachines }: NewMachineModalProps) {
+export function NewMachineModal() {
   const {
     register,
     handleSubmit,
@@ -53,7 +49,6 @@ export function NewMachineModal({ fetchMachines }: NewMachineModalProps) {
       toast.success('Máquina criada com sucesso!')
 
       reset()
-      fetchMachines()
     } catch (error) {
       ToastAxiosError(error)
     }

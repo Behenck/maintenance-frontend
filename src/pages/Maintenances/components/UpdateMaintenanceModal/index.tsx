@@ -8,7 +8,7 @@ import { z } from 'zod'
 import { Button } from '../../../../components/Button'
 import { Maintenance } from '../../../../contexts/MaintenancesContext'
 import { ToastAxiosError } from '../../../../errors/ToastAxiosError'
-import { useMaintenance } from '../../../../hooks/useMaintenance'
+import { useMaintenance } from '../../../../services/hooks/useMaintenance'
 import { api } from '../../../../lib/api'
 import { Steps } from './Steps'
 import { StepInfo } from './Steps/StepInfo'
@@ -40,6 +40,7 @@ export function UpdateMaintenanceModal({
 }: UpdateMaintenanceModalProps) {
   const [positionStep, setPositionStep] = useState(1)
   const [userInput, setUserInput] = useState(maintenance.user.name)
+  const [isDepartmentValid, setIsDepartmentValid] = useState(true)
   const [departmentInput, setDepartmentInput] = useState(
     maintenance.department.name,
   )
@@ -48,6 +49,10 @@ export function UpdateMaintenanceModal({
     new Date(maintenance.maintenanceDate).toISOString().split('T')[0],
   )
   const { fetchMaintenances } = useMaintenance()
+
+  function onDepartmentIsValid(valid: boolean) {
+    setIsDepartmentValid(valid)
+  }
 
   function nextStep() {
     if (positionStep < 3) {
@@ -120,8 +125,11 @@ export function UpdateMaintenanceModal({
   const isEnabledButtonToUserAndDepartmentAndIpNotEmpty =
     (userInput.length >= 3 &&
       departmentInput.length >= 2 &&
-      positionStep === 1) ||
+      positionStep === 1 &&
+      isDepartmentValid) ||
     (ipInput.length >= 11 && positionStep === 2)
+
+  console.log(isDepartmentValid)
   return (
     <Dialog.Portal>
       <Dialog.Overlay className="fixed w-screen h-screen inset-0 bg-overlay" />
@@ -159,6 +167,7 @@ export function UpdateMaintenanceModal({
               setUserInput={setUserInput}
               setDepartmentInput={setDepartmentInput}
               register={register}
+              onDepartmentIsValid={onDepartmentIsValid}
             />
           )}
           {positionStep === 2 && (

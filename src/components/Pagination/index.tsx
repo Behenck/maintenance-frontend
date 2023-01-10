@@ -1,4 +1,3 @@
-import { useMaintenance } from '../../hooks/useMaintenance'
 import { PaginationItem } from './PaginationItem'
 
 interface PaginationProps {
@@ -24,8 +23,7 @@ export function Pagination({
   currentPage = 1,
   onPageChange,
 }: PaginationProps) {
-  const lastPage = Math.floor(totalCountOfRegisters / registerPerPage)
-  const { totalMaintenances } = useMaintenance()
+  const lastPage = Math.ceil(totalCountOfRegisters / registerPerPage)
 
   const previousPages =
     currentPage > 1
@@ -41,18 +39,20 @@ export function Pagination({
       : []
 
   return (
-    <div className="flex justify-between items-center space-y-6">
+    <div className="flex justify-between items-center space-y-4">
       <div>
         <strong>0</strong> -{' '}
-        <strong>{totalMaintenances <= 10 ? totalMaintenances : 10}</strong> de{' '}
-        <strong>{totalMaintenances}</strong>
+        <strong>
+          {totalCountOfRegisters <= 10 ? totalCountOfRegisters : 10}
+        </strong>{' '}
+        de <strong>{totalCountOfRegisters}</strong>
       </div>
       <div className="flex space-x-2">
         {currentPage > 1 + siblingsCount && (
           <>
             <PaginationItem onPageChange={onPageChange} number={1} />
             {currentPage > 2 + siblingsCount && (
-              <p className="text-center pt-2 w-8 text-gray-300">...</p>
+              <p className="text-center pt-2 w-8 text-gray-900">...</p>
             )}
           </>
         )}

@@ -1,13 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Input } from '../../../../../components/Input'
 import { api } from '../../../../../lib/api'
 
 interface StepUserProps {
   register: any
+  departmentInput: string
   setUserInput: (userName: string) => void
   setDepartmentInput: (departmentName: string) => void
-  departmentInput: string
-  userInput: string
+  onDepartmentIsValid: (valid: boolean) => void
 }
 
 interface User {
@@ -28,21 +28,44 @@ export function StepUser({
   departmentInput,
   setUserInput,
   setDepartmentInput,
-  userInput,
+  onDepartmentIsValid,
 }: StepUserProps) {
   const [users, setUsers] = useState<User[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
+
+  useEffect(() => {
+    const storageResponse = localStorage.getItem('DEPARTMENTS@maintenance1.0.0')
+    if (storageResponse) {
+      setDepartments(JSON.parse(storageResponse))
+    }
+  }, [])
 
   async function onBlurToSearchDepartmentWhereName(userName: string) {
     const user = await api.get(`/users/${userName}`)
     setDepartmentInput(user.data[0] ? user.data[0].department.name : '')
     findUsers(userName)
     setUserInput(userName)
+    isValidDepartment()
+    onDepartmentIsValid(!!user.data[0])
   }
 
   function onChangeDepartments(departmentName: string) {
-    findDepartments(departmentName)
+    findDepartments()
     setDepartmentInput(departmentName)
+    isValidDepartment(departmentName)
+  }
+
+  function isValidDepartment(name?: string) {
+    const depName = name || departmentInput
+
+    const existsDepartment = departments.find(
+      (department) => department.name === depName,
+    )
+    if (existsDepartment) {
+      onDepartmentIsValid(true)
+    } else {
+      onDepartmentIsValid(false)
+    }
   }
 
   async function findUsers(searchUserName: string) {
@@ -50,9 +73,15 @@ export function StepUser({
     setUsers(response.data)
   }
 
-  async function findDepartments(searchDepartmentName: string) {
-    const response = await api.get(`/departments/${searchDepartmentName}`)
-    setDepartments(response.data)
+  async function findDepartments() {
+    const storedDepartments = localStorage.getItem(
+      'DEPARTMENTS@maintenance1.0.0',
+    )
+    if (storedDepartments) {
+      const storedDepartmentsJSON = JSON.parse(storedDepartments)
+      setDepartments(storedDepartmentsJSON)
+    }
+    isValidDepartment()
   }
 
   return (
