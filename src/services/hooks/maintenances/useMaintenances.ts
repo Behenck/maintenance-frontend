@@ -50,6 +50,6 @@ export async function getMaintenances(
 }
 export function useMaintenances(page: number) {
   return useQuery(['maintenances', page], () => getMaintenances(page), {
-    staleTime: 1000 * 60, // 10 seg
+    staleTime: 1000 * 60, // 60 seg
   })
 }

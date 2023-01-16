@@ -1,10 +1,12 @@
 import { InputHTMLAttributes } from 'react'
+import { ErrorMessage } from '@hookform/error-message'
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   title: string
   name: string
   isRequired?: boolean
   register: any
+  errors?: any
 }
 
 export function Input({
@@ -12,6 +14,7 @@ export function Input({
   title,
   isRequired = false,
   register,
+  errors,
   ...props
 }: InputProps) {
   return (
@@ -29,6 +32,7 @@ export function Input({
         {...register(name)}
         {...props}
       />
+      {errors && <ErrorMessage errors={errors} name="singleErrorInput" />}
     </div>
   )
 }

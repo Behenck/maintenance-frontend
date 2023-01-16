@@ -1,27 +1,28 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as Dialog from '@radix-ui/react-dialog'
 import { X } from 'phosphor-react'
-import { useEffect, useState } from 'react'
-import { SubmitHandler, useForm } from 'react-hook-form'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
 import { z } from 'zod'
 import { Button } from '../../../../components/Button'
+import { Maintenance } from '../../../../contexts/MaintenancesContext'
 import { ToastAxiosError } from '../../../../errors/ToastAxiosError'
+import { useMaintenance } from '../../../../services/hooks/useMaintenance'
 import { api } from '../../../../lib/api'
 import { Steps } from './Steps'
 import { StepInfo } from './Steps/StepInfo'
 import { StepMachine } from './Steps/StepMachine'
 import { StepUser } from './Steps/StepUser'
-import { useMutation } from 'react-query'
-import { queryClient } from '../../../../services/queryClient'
+
+interface UpdateMaintenanceModalProps {
+  maintenance: Maintenance
+}
 
 const NewMaintenanceFormSchema = z.object({
   userName: z.string().min(3),
   departmentName: z.string().min(2),
-  ip: z
-    .string()
-    .min(11, { message: 'Digite um ip correto' })
-    .max(15, { message: 'Digite um ip correto' }),
+  ip: z.string().min(11).max(15),
   processor: z.string(),
   motherboard: z.string(),
   memory: z.string(),
@@ -34,13 +35,24 @@ const NewMaintenanceFormSchema = z.object({
 
 type NewMaintenanceFormInputs = z.infer<typeof NewMaintenanceFormSchema>
 
-interface NewMaintenanceModalProps {
-  onOpenModal: () => void
-}
-
-export function NewMaintenanceModal({ onOpenModal }: NewMaintenanceModalProps) {
+export function UpdateMaintenanceModal({
+  maintenance,
+}: UpdateMaintenanceModalProps) {
   const [positionStep, setPositionStep] = useState(1)
-  const [enableButton, setEnableButton] = useState(false)
+  const [userInput, setUserInput] = useState(maintenance.user.name)
+  const [isDepartmentValid, setIsDepartmentValid] = useState(true)
+  const [departmentInput, setDepartmentInput] = useState(
+    maintenance.department.name,
+  )
+  const [ipInput, setIpInput] = useState(maintenance.machine.ip)
+  const [maintenanceDate, setMaintenanceDate] = useState(
+    new Date(maintenance.maintenanceDate).toISOString().split('T')[0],
+  )
+  const { fetchMaintenances } = useMaintenance()
+
+  function onDepartmentIsValid(valid: boolean) {
+    setIsDepartmentValid(valid)
+  }
 
   function nextStep() {
     if (positionStep < 3) {
@@ -54,77 +66,78 @@ export function NewMaintenanceModal({ onOpenModal }: NewMaintenanceModalProps) {
     }
   }
 
-  function onEnableButton(enable: boolean) {
-    setEnableButton(enable)
-  }
-
   const {
     register,
     handleSubmit,
-    getValues,
-    setValue,
-    formState: { isSubmitting, errors },
+    formState: { isSubmitting },
     reset,
   } = useForm<NewMaintenanceFormInputs>({
     resolver: zodResolver(NewMaintenanceFormSchema),
-    defaultValues: {
-      maintenanceDate: new Date().toISOString().split('T')[0],
-    },
   })
-
-  useEffect(() => {
-    errors.userName && setPositionStep(1)
-    errors.departmentName && setPositionStep(1)
-    if (errors.ip) {
-      setPositionStep(2)
-      toast.error(errors.ip.message ? errors.ip.message : '')
-    }
-  }, [errors])
 
   function resetAll() {
     reset()
     setPositionStep(1)
-    onOpenModal()
+    setDepartmentInput('')
+    setUserInput('')
+    setIpInput('')
+    fetchMaintenances()
   }
 
-  const createMaintenance = useMutation(
-    async (data: NewMaintenanceFormInputs) => {
-      try {
-        await api.post('/maintenances', {
-          ...data,
-        })
+  async function handleUpdateMaintenance(data: NewMaintenanceFormInputs) {
+    const {
+      departmentName,
+      ip,
+      userName,
+      maintenanceDate,
+      description,
+      font,
+      memory,
+      motherboard,
+      processor,
+      storage,
+      system,
+    } = data
 
-        toast.success('Manutenção criada com sucesso!')
-        resetAll()
-      } catch (error) {
-        console.log(error)
-        ToastAxiosError(error)
-      }
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries('maintenances')
-      },
-    },
-  )
+    try {
+      await api.put(`/maintenances/${maintenance.id}`, {
+        departmentName,
+        ip,
+        userName,
+        maintenanceDate,
+        description,
+        font,
+        memory,
+        motherboard,
+        processor,
+        storage,
+        system,
+      })
 
-  const handleCreateMaintenance: SubmitHandler<
-    NewMaintenanceFormInputs
-  > = async (values) => {
-    await createMaintenance.mutateAsync(values)
+      toast.success('Manutenção foi editada com sucesso!')
+      resetAll()
+    } catch (error) {
+      console.log(error)
+      ToastAxiosError(error)
+    }
   }
 
+  const isEnabledButtonToUserAndDepartmentAndIpNotEmpty =
+    (userInput.length >= 3 &&
+      departmentInput.length >= 2 &&
+      positionStep === 1 &&
+      isDepartmentValid) ||
+    (ipInput.length >= 11 && positionStep === 2)
+
+  console.log(isDepartmentValid)
   return (
     <Dialog.Portal>
-      <Dialog.Overlay
-        className="fixed w-screen h-screen inset-0 bg-overlay"
-        onClick={resetAll}
-      />
+      <Dialog.Overlay className="fixed w-screen h-screen inset-0 bg-overlay" />
 
       <Dialog.Content className="flex flex-col bg-gray-100 min-w-[32rem] rounded px-10 py-12 fixed top-2/4 left-2/4 transform -translate-x-1/2 -translate-y-1/2">
         <div className="flex items-center justify-between mb-5">
           <Dialog.Title className="font-bold text-gray-800 text-xl">
-            Nova Manutenção
+            Editar Manutenção
           </Dialog.Title>
           <Dialog.Close asChild>
             <button className="IconButton" aria-label="Close">
@@ -140,7 +153,7 @@ export function NewMaintenanceModal({ onOpenModal }: NewMaintenanceModalProps) {
 
         <form
           className="flex flex-col gap-3"
-          onSubmit={handleSubmit(handleCreateMaintenance)}
+          onSubmit={handleSubmit(handleUpdateMaintenance)}
         >
           <Steps
             names={['Usuário', 'Máquina', 'Informações']}
@@ -149,27 +162,34 @@ export function NewMaintenanceModal({ onOpenModal }: NewMaintenanceModalProps) {
 
           {positionStep === 1 && (
             <StepUser
+              userInput={userInput}
+              departmentInput={departmentInput}
+              setUserInput={setUserInput}
+              setDepartmentInput={setDepartmentInput}
               register={register}
-              onEnableButton={onEnableButton}
-              getValues={getValues}
-              errors={errors}
+              onDepartmentIsValid={onDepartmentIsValid}
             />
           )}
           {positionStep === 2 && (
             <StepMachine
-              errors={errors}
-              setValue={setValue}
+              setIpInput={setIpInput}
+              ipInput={ipInput}
               register={register}
             />
           )}
-          {positionStep === 3 && <StepInfo register={register} />}
+          {positionStep === 3 && (
+            <StepInfo
+              register={register}
+              maintenanceDate={maintenanceDate}
+              setMaintenanceDate={setMaintenanceDate}
+            />
+          )}
 
           <div className="w-full flex justify-between">
             {positionStep === 1 ? (
               <span></span>
             ) : (
               <Button
-                type="button"
                 onClick={returnStep}
                 className="bg-gray-300 hover:bg-gray-350"
               >
@@ -182,7 +202,7 @@ export function NewMaintenanceModal({ onOpenModal }: NewMaintenanceModalProps) {
                 type="button"
                 onClick={nextStep}
                 className="bg-blue-300 hover:bg-blue-400"
-                isDisabled={!enableButton}
+                isDisabled={!isEnabledButtonToUserAndDepartmentAndIpNotEmpty}
               >
                 Próximo
               </Button>

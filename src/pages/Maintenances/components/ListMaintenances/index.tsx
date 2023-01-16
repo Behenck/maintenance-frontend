@@ -1,4 +1,3 @@
-import * as Dialog from '@radix-ui/react-dialog'
 import { Pencil, TrashSimple } from 'phosphor-react'
 import { useState } from 'react'
 import { toast } from 'react-hot-toast'
@@ -19,13 +18,15 @@ interface ListMaintenancesProps {
 export function ListMaintenances({ maintenances }: ListMaintenancesProps) {
   const { fetchMaintenances } = useMaintenance()
   const [onOpen, setOnOpen] = useState(false)
-  const [maintenanceToEdit, setMaintenanceToEdit] = useState<Maintenance>(
-    {} as Maintenance,
-  )
+  const [id, setId] = useState('')
 
-  function handleSetOnOpen(maintenanceEdit: any) {
-    setOnOpen(!onOpen)
-    setMaintenanceToEdit(maintenanceEdit)
+  function handleSetOnOpenModal() {
+    setOnOpen((isOpen) => !isOpen)
+  }
+
+  function openModal(id: string) {
+    setId(id)
+    setOnOpen((isOpen) => !isOpen)
   }
 
   async function handleDeleteMaintenance(id: string) {
@@ -75,23 +76,22 @@ export function ListMaintenances({ maintenances }: ListMaintenancesProps) {
                   <td className="">
                     <DropdownMenuMachineInfo machine={maintenance.machine} />
                   </td>
-                  <td className="flex gap-2 items-center justify-center py-2 mt-1">
-                    <Dialog.Root>
-                      <Dialog.Trigger asChild>
-                        <Button
-                          className="bg-gray-700 hover:bg-gray-800 px-2 cursor-pointer"
-                          onClick={() => handleSetOnOpen(maintenance)}
-                        >
-                          <Pencil size={18} />
-                        </Button>
-                      </Dialog.Trigger>
-
-                      {onOpen && (
-                        <UpdateMaintenanceModal
-                          maintenance={maintenanceToEdit}
-                        />
-                      )}
-                    </Dialog.Root>
+                  <td className="flex gap-2 items-center justify-center mt-1">
+                    <Button
+                      className="bg-gray-700 hover:bg-gray-800 px-2 cursor-pointer"
+                      onClick={() => {
+                        openModal(maintenance.id)
+                      }}
+                    >
+                      <Pencil size={18} />
+                    </Button>
+                    {maintenance.id === id && (
+                      <UpdateMaintenanceModal
+                        handleSetOnOpenModal={handleSetOnOpenModal}
+                        id={maintenance.id}
+                        open={onOpen}
+                      />
+                    )}
 
                     <AlertDialog
                       deleteInfoName={`Usuário: ${maintenance.user.name}, ip: ${maintenance.machine.ip}`}

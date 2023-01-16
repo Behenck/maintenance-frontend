@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Input } from '../../../../../components/Input'
 import { api } from '../../../../../lib/api'
-import { Maintenance } from '../../../../../services/hooks/maintenances/useMaintenances'
 
 interface StepUserProps {
   register: any
-  data: Maintenance
+  setUserInput: (userName: string) => void
+  setDepartmentInput: (departmentName: string) => void
+  departmentInput: string
+  userInput: string
   onDepartmentIsValid: (valid: boolean) => void
 }
 
@@ -24,34 +26,44 @@ interface Department {
 
 export function StepUser({
   register,
+  departmentInput,
+  setUserInput,
+  setDepartmentInput,
+  userInput,
   onDepartmentIsValid,
-  data,
 }: StepUserProps) {
   const [users, setUsers] = useState<User[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
 
-  useEffect(() => {
-    const storageResponse = localStorage.getItem('DEPARTMENTS@maintenance1.0.0')
-    if (storageResponse) {
-      setDepartments(JSON.parse(storageResponse))
-    }
-  }, [])
-
-  async function onBlurToSearchDepartmentWhereName(userName: string) {
+  async function onChangeToSearchDepartmentWhereName(userName: string) {
     const user = await api.get(`/users/${userName}`)
+    setDepartmentInput(user.data[0] ? user.data[0].department.name : '')
     findUsers(userName)
-    isValidDepartment()
+    setUserInput(userName)
+    isValidDepartment(user.data[0].department.name)
     onDepartmentIsValid(!!user.data[0])
   }
 
   function onChangeDepartments(departmentName: string) {
-    findDepartments()
+    findDepartments(departmentName)
+    setDepartmentInput(departmentName)
     isValidDepartment(departmentName)
+  }
+
+  async function findUsers(searchUserName: string) {
+    const response = await api.get(`/users/${searchUserName}`)
+    setUsers(response.data)
+  }
+
+  async function findDepartments(searchDepartmentName: string) {
+    const response = await api.get(`/departments/${searchDepartmentName}`)
+    setDepartments(response.data)
+    isValidDepartment(searchDepartmentName)
   }
 
   function isValidDepartment(name?: string) {
     const depName = name
-
+    console.log(name)
     const existsDepartment = departments.find(
       (department) => department.name === depName,
     )
@@ -62,22 +74,6 @@ export function StepUser({
     }
   }
 
-  async function findUsers(searchUserName: string) {
-    const response = await api.get(`/users/${searchUserName}`)
-    setUsers(response.data)
-  }
-
-  async function findDepartments() {
-    const storedDepartments = localStorage.getItem(
-      'DEPARTMENTS@maintenance1.0.0',
-    )
-    if (storedDepartments) {
-      const storedDepartmentsJSON = JSON.parse(storedDepartments)
-      setDepartments(storedDepartmentsJSON)
-    }
-    isValidDepartment()
-  }
-
   return (
     <>
       <Input
@@ -86,8 +82,8 @@ export function StepUser({
         isRequired
         list="usersList"
         register={register}
-        onBlur={(e) => onBlurToSearchDepartmentWhereName(e.target.value)}
-        defaultValue={data.user.name}
+        onChange={(e) => onChangeToSearchDepartmentWhereName(e.target.value)}
+        value={userInput}
       />
       <datalist id="usersList">
         {users.map((user) => {
@@ -101,7 +97,7 @@ export function StepUser({
         isRequired
         list="departmentsList"
         onChange={(e) => onChangeDepartments(e.target.value)}
-        defaultValue={data.department.name}
+        value={departmentInput !== 'a' ? departmentInput : ''}
       />
       <datalist id="departmentsList">
         {departments.map((department) => {

@@ -5,8 +5,8 @@ import { api } from '../../../../../lib/api'
 
 interface StepMachineProps {
   register: any
-  setIpInput: (ip: string) => void
-  ipInput: string
+  errors: any
+  setValue: any
 }
 
 interface Machine {
@@ -18,16 +18,17 @@ interface Machine {
   system: string
 }
 
-export function StepMachine({
-  register,
-  setIpInput,
-  ipInput,
-}: StepMachineProps) {
+export function StepMachine({ register, errors, setValue }: StepMachineProps) {
   const [machine, setMachine] = useState<Machine>({} as Machine)
   async function onBlurToSearchMachineDetailsWhereIp(ip: string) {
     const machine = await api.get<Machine>(`/machines/${ip}`)
     setMachine(machine.data)
-    setIpInput(ip)
+    setValue('processor', machine.data.processor)
+    setValue('motherboard', machine.data.motherboard)
+    setValue('memory', machine.data.memory)
+    setValue('font', machine.data.font)
+    setValue('storage', machine.data.storage)
+    setValue('system', machine.data.system)
   }
 
   return (
@@ -38,24 +39,19 @@ export function StepMachine({
         isRequired
         register={register}
         onBlur={(e) => onBlurToSearchMachineDetailsWhereIp(e.target.value)}
+        errors={errors}
       />
       <Input
         name="processor"
         title="Processador"
         register={register}
-        onChange={(e) =>
-          setMachine((state) => ({ ...state, processor: e.target.value }))
-        }
-        value={machine ? machine.processor : ''}
+        defaultValue={machine.processor}
       />
       <Input
         name="motherboard"
         title="Placa mãe"
         register={register}
-        onChange={(e) =>
-          setMachine((state) => ({ ...state, motherboard: e.target.value }))
-        }
-        value={machine ? machine.motherboard : ''}
+        defaultValue={machine.motherboard}
       />
 
       <div className="grid grid-cols-2 gap-2">
@@ -63,19 +59,13 @@ export function StepMachine({
           name="memory"
           title="Memória"
           register={register}
-          onChange={(e) =>
-            setMachine((state) => ({ ...state, memory: e.target.value }))
-          }
-          value={machine ? machine.memory : ''}
+          defaultValue={machine.memory}
         />
         <Input
           name="font"
           title="Fonte"
           register={register}
-          onChange={(e) =>
-            setMachine((state) => ({ ...state, font: e.target.value }))
-          }
-          value={machine ? machine.font : ''}
+          defaultValue={machine.font}
         />
       </div>
 
@@ -93,20 +83,14 @@ export function StepMachine({
             'HD IDE',
           ]}
           register={register}
-          onChange={(e) =>
-            setMachine((state) => ({ ...state, storage: e.target.value }))
-          }
-          value={machine ? machine.storage : ''}
+          defaultValue={machine.storage}
         />
         <Select
           name="system"
           title="Sistema Operacional"
           options={['Windows 10', 'Windows 7', 'Windows 11', 'Windows XP']}
           register={register}
-          onChange={(e) =>
-            setMachine((state) => ({ ...state, system: e.target.value }))
-          }
-          value={machine ? machine.system : ''}
+          defaultValue={machine.system}
         />
       </div>
     </>

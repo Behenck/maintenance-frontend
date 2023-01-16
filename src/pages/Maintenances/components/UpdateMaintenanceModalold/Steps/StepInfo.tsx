@@ -1,8 +1,15 @@
 interface StepInfoProps {
   register: any
+  setMaintenanceDate: (date: string) => void
+  maintenanceDate: string
 }
 
-export function StepInfo({ register }: StepInfoProps) {
+export function StepInfo({
+  register,
+  maintenanceDate,
+  setMaintenanceDate,
+}: StepInfoProps) {
+  console.log(maintenanceDate)
   return (
     <>
       <div className="w-full">
@@ -17,6 +24,8 @@ export function StepInfo({ register }: StepInfoProps) {
           type="date"
           className="mt-1 px-3 py-2 bg-white border border-gray-300 text-gray-700 text-sm rounded-md w-full border-none shadow-md"
           placeholder="Select date"
+          onFocus={(e) => setMaintenanceDate(e.target.value)}
+          value={maintenanceDate}
           {...register('maintenanceDate')}
         />
       </div>

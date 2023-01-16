@@ -4,18 +4,9 @@ import { api } from '../../../../../lib/api'
 
 interface StepUserProps {
   register: any
-  departmentInput: string
-  setUserInput: (userName: string) => void
-  setDepartmentInput: (departmentName: string) => void
-  onDepartmentIsValid: (valid: boolean) => void
-}
-
-interface User {
-  id: string
-  name: string
-  department: {
-    name: string
-  }
+  onEnableButton: (enable: boolean) => void
+  getValues: any
+  errors: any
 }
 
 interface Department {
@@ -25,13 +16,14 @@ interface Department {
 
 export function StepUser({
   register,
-  departmentInput,
-  setUserInput,
-  setDepartmentInput,
-  onDepartmentIsValid,
+  onEnableButton,
+  getValues,
+  errors,
 }: StepUserProps) {
-  const [users, setUsers] = useState<User[]>([])
   const [departments, setDepartments] = useState<Department[]>([])
+  const [departmentName, setDepartmentName] = useState(
+    getValues('departmentName'),
+  )
 
   useEffect(() => {
     const storageResponse = localStorage.getItem('DEPARTMENTS@maintenance1.0.0')
@@ -40,37 +32,27 @@ export function StepUser({
     }
   }, [])
 
-  async function onBlurToSearchDepartmentWhereName(userName: string) {
-    const user = await api.get(`/users/${userName}`)
-    setDepartmentInput(user.data[0] ? user.data[0].department.name : '')
-    findUsers(userName)
-    setUserInput(userName)
-    isValidDepartment()
-    onDepartmentIsValid(!!user.data[0])
-  }
-
-  function onChangeDepartments(departmentName: string) {
-    findDepartments()
-    setDepartmentInput(departmentName)
-    isValidDepartment(departmentName)
-  }
-
-  function isValidDepartment(name?: string) {
-    const depName = name || departmentInput
-
-    const existsDepartment = departments.find(
-      (department) => department.name === depName,
-    )
-    if (existsDepartment) {
-      onDepartmentIsValid(true)
+  async function handleToSearchDepartmentWhereName(value: string) {
+    const users = await api.get(`/users/${value}`)
+    if (users.data.length > 0) {
+      onEnableButton(true)
+      setDepartmentName(users.data[0].department.name)
     } else {
-      onDepartmentIsValid(false)
+      onEnableButton(false)
     }
   }
 
-  async function findUsers(searchUserName: string) {
-    const response = await api.get(`/users/${searchUserName}`)
-    setUsers(response.data)
+  async function handleExistsDepartment(departmentName: string) {
+    setDepartmentName(departmentName)
+    findDepartments()
+    const existsDepartment = departments.find(
+      (department) => department.name === departmentName,
+    )
+    if (existsDepartment) {
+      onEnableButton(true)
+    } else {
+      onEnableButton(false)
+    }
   }
 
   async function findDepartments() {
@@ -81,7 +63,6 @@ export function StepUser({
       const storedDepartmentsJSON = JSON.parse(storedDepartments)
       setDepartments(storedDepartmentsJSON)
     }
-    isValidDepartment()
   }
 
   return (
@@ -92,21 +73,18 @@ export function StepUser({
         isRequired
         list="usersList"
         register={register}
-        onBlur={(e) => onBlurToSearchDepartmentWhereName(e.target.value)}
+        onBlur={(e) => handleToSearchDepartmentWhereName(e.target.value)}
+        errors={errors}
       />
-      <datalist id="usersList">
-        {users.map((user) => {
-          return <option key={user.id} value={user.name} />
-        })}
-      </datalist>
       <Input
         name="departmentName"
         title="Setor"
         register={register}
         isRequired
         list="departmentsList"
-        onChange={(e) => onChangeDepartments(e.target.value)}
-        value={departmentInput !== 'a' ? departmentInput : ''}
+        onChange={(e) => handleExistsDepartment(e.target.value)}
+        value={departmentName}
+        errors={errors}
       />
       <datalist id="departmentsList">
         {departments.map((department) => {

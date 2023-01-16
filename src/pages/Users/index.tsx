@@ -122,10 +122,7 @@ export function Users() {
                           : 'Nenhum setor vinculado'}
                       </td>
                       <td className="text-right flex justify-end gap-2">
-                        <Button className="bg-gray-700 hover:bg-gray-800 px-2">
-                          <Pencil size={18} />
-                        </Button>
-                        <AlertDialog
+                        {/* <AlertDialog
                           deleteInfoName={user.name}
                           onDelete={() => onDeleteUser(user.id)}
                           title="usuário"
@@ -134,7 +131,7 @@ export function Users() {
                           <Button className="bg-red-600 hover:bg-red-700 px-2">
                             <TrashSimple size={18} />
                           </Button>
-                        </AlertDialog>
+                        </AlertDialog> */}
                       </td>
                     </tr>
                   ))}

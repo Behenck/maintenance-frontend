@@ -10,15 +10,14 @@ const DropdownMenuMachineInfo = ({ machine }: MachineInfoProps) => {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <button className="bg-gray-750 hover:bg-gray-800 px-2 py-1 rounded flex items-center justify-center gap-2">
+        <button className="bg-sky-800 hover:bg-sky-900 transition-all px-2 py-2 ml-4 rounded flex items-center justify-center gap-2">
           <Info color="white" size={20} />
-          <span className="text-gray-100">Detalhes</span>
         </button>
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Portal>
         <DropdownMenu.Content className="DropdownMenuContent" sideOffset={5}>
-          <div className="w-full flex flex-col bg-gray-750 p-6 text-gray-100 rounded-lg space-y-2">
+          <div className="w-full flex flex-col bg-sky-800 p-6 text-gray-100 rounded-lg space-y-2">
             <div className="flex items-center space-x-2">
               <Desktop size={20} />
               <h1> Descrição Máquina</h1>

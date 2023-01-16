@@ -77,7 +77,7 @@ export function Machines() {
                     <RowInfoNotLinked info={machine?.system} />
 
                     <td className="text-right flex justify-end py-2 gap-2">
-                      <Button className="bg-gray-700 hover:bg-gray-800 py-2 px-2">
+                      {/* <Button className="bg-gray-700 hover:bg-gray-800 py-2 px-2">
                         <Pencil size={18} />
                       </Button>
                       <AlertDialog
@@ -89,7 +89,7 @@ export function Machines() {
                         <Button className="bg-red-600 hover:bg-red-700 py-2 px-2">
                           <TrashSimple size={18} />
                         </Button>
-                      </AlertDialog>
+                      </AlertDialog> */}
                     </td>
                   </tr>
                 ))}
