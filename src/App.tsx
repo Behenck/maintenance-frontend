@@ -5,7 +5,7 @@ import { Toaster } from 'react-hot-toast'
 import { MaintenancesProvider } from './contexts/MaintenancesContext'
 import { QueryClientProvider } from 'react-query'
 import { queryClient } from './services/queryClient'
-import { ReactQueryDevtools } from 'react-query/devtools'
+// import { ReactQueryDevtools } from 'react-query/devtools'
 
 function App() {
   return (
@@ -17,7 +17,7 @@ function App() {
         </MaintenancesProvider>
       </BrowserRouter>
 
-      <ReactQueryDevtools />
+      {/* <ReactQueryDevtools /> */}
     </QueryClientProvider>
   )
 }

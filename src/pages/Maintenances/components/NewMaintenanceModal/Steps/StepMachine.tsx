@@ -20,15 +20,18 @@ interface Machine {
 
 export function StepMachine({ register, errors, setValue }: StepMachineProps) {
   const [machine, setMachine] = useState<Machine>({} as Machine)
+
   async function onBlurToSearchMachineDetailsWhereIp(ip: string) {
     const machine = await api.get<Machine>(`/machines/${ip}`)
-    setMachine(machine.data)
-    setValue('processor', machine.data.processor)
-    setValue('motherboard', machine.data.motherboard)
-    setValue('memory', machine.data.memory)
-    setValue('font', machine.data.font)
-    setValue('storage', machine.data.storage)
-    setValue('system', machine.data.system)
+    if (machine.data) {
+      setMachine(machine.data)
+      setValue('processor', machine.data.processor ? machine.data.processor : '')
+      setValue('motherboard', machine.data.motherboard ? machine.data.motherboard : '')
+      setValue('memory', machine.data.memory ? machine.data.memory : '')
+      setValue('font', machine.data.memory ? machine.data.memory : '')
+      setValue('storage', machine.data.storage ? machine.data.storage : '')
+      setValue('system', machine.data.system ? machine.data.system : machine.data.system)
+    }
   }
 
   return (

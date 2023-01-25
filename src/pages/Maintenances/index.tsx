@@ -17,7 +17,7 @@ import { SearchMaintenances } from './components/SearchMaintenances'
 export function Maintenances() {
   const [page, setPage] = useState(1)
   const [open, setOpen] = useState(false)
-  const { isLoading, daysBeforeMaintenance } = useMaintenance()
+  const { isLoading } = useMaintenance()
   const { data: dataMaintenances } = useMaintenances(page)
   const [maintenances, setMaintenances] = useState<Maintenance[]>([])
 
@@ -36,12 +36,12 @@ export function Maintenances() {
     <>
       <Summary />
 
-      <main className="bg-white rounded-lg flex flex-col shadow-md mt-4 pb-6 min-h-[400px]">
+      <main className="bg-white rounded-lg flex flex-col shadow-md mt-4 pb-6 h-full min-h-[400px]">
         <div className="flex justify-between p-6 items-center">
           <div>
             <h1 className="text-lg">Manutenção dos computadores</h1>
             <p className="text-xxs text-gray-400">
-              última manutenção {daysBeforeMaintenance}
+              {dataMaintenances?.timePassedMessage}
             </p>
           </div>
 

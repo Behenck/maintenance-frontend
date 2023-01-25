@@ -68,7 +68,10 @@ export function ListMaintenances({ maintenances }: ListMaintenancesProps) {
                   <td className="">
                     {formatDate(maintenance.maintenanceDate)}
                   </td>
-                  <td className="">
+                  <td
+                    title={maintenance.description}
+                    className="max-w-[5rem] overflow-hidden overflow-ellipsis whitespace-nowrap"
+                  >
                     {maintenance.description
                       ? maintenance.description
                       : 'Sem descrição'}
